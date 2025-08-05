@@ -4,16 +4,15 @@ fn main() -> ExitCode {
     let mut args = args().skip(1);
 
     let mut inputs = VecDeque::<String>::new();
-    let mut verbose = false;
+
+    let mut verbose = false; // TODO: implement these jawns
     let mut output: Option<String> = None;
-    let mut exitFlag = false;
 
     while let Some(arg) = args.next() {
         match &arg[..] {
             "-h" | "--help" => {
                 help();
-                exitFlag = true;
-                break;
+                return ExitCode::SUCCESS;
             }
             "-v | --verbose" => verbose = true,
             "-r | --recursive" => println!("recursive not implemented"),
@@ -32,10 +31,6 @@ fn main() -> ExitCode {
                 }
             }
         }
-    }
-
-    if exitFlag == true {
-        return ExitCode::SUCCESS;
     }
 
     if inputs.len() > 1 {
