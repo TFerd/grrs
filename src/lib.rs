@@ -1,9 +1,14 @@
-use std::io::{Write, stdout};
+use std::io::{Error, Write};
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
-fn find_matches(pattern: &str, content: &str, mut writer: impl Write) {
-    let penmg = "safd";
-    writeln!(writer, "whoa");
+fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
+    while let Some(line) = content.lines().next() {
+        if line.contains(pattern) {
+            writeln!(writer, "{}", line)?;
+        }
+    }
+
+    Ok(())
 }
 
 /// Returns lines containing matches of `pattern` within `content`
