@@ -2,7 +2,7 @@ use std::io::{Error, Write};
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
 fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
-    while let Some(line) = content.lines().next() {
+    for line in content.lines() {
         if line.contains(pattern) {
             writeln!(writer, "{}", line)?;
         }
@@ -14,20 +14,34 @@ fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<
 /// Returns lines containing matches of `pattern` within `content`
 fn return_matches<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
     let mut vec = Vec::new();
-    vec.push(content);
+
+    for line in content.lines() {
+        if line.contains(pattern) {
+            vec.push(line);
+        }
+    }
+
     vec
 }
 
 #[test]
-fn tests_work() {
-    assert_eq!(1, 1);
+fn find_matches_finds_matches() {
+    let mut writer = Vec::new();
+    let result = find_matches(
+        "pattern",
+        "benis\nboosy\ni have a pattern\nwuuzy",
+        &mut writer,
+    );
+
+    assert!(result.is_ok());
+    assert_eq!(writer, b"i have a pattern\n");
 }
 
 #[test]
-fn erm() {
-    let mut thing = Vec::new();
-    find_matches("pattern", "content", &mut thing);
+fn return_matches_returns_matches() {
+    let result = return_matches("match", "hello\nmatchme\nim a match\nim a catch");
 
-    assert!(true);
-    assert_eq!(thing, b"whoa\n");
+    assert_eq!(2, result.len());
+    assert_eq!(*result.get(0).unwrap(), "matchme");
+    assert_eq!(*result.get(1).unwrap(), "im a match");
 }
