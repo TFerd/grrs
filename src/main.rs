@@ -1,6 +1,7 @@
-use std::{collections::VecDeque, env::args, io::Write, path::Path, process::ExitCode};
+use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-fn main() -> ExitCode {
+fn main() {
+    let timer = SystemTime::now();
     let mut args = args().skip(1);
 
     let mut inputs = VecDeque::<String>::new();
@@ -12,7 +13,7 @@ fn main() -> ExitCode {
         match &arg[..] {
             "-h" | "--help" => {
                 help();
-                return ExitCode::SUCCESS;
+                return;
             }
             "-v | --verbose" => verbose = true,
             "-r | --recursive" => println!("recursive not implemented"),
@@ -50,12 +51,11 @@ fn main() -> ExitCode {
         }
     } else {
         println!("Not enough parameters given. The correct syntax is 'grrs <query> [<files>]'");
-        return ExitCode::SUCCESS;
+        return;
     }
 
     println!("inputs: {:?}", inputs);
-
-    ExitCode::SUCCESS
+    println!("grrs ran in {} ms", timer.elapsed().unwrap().as_millis());
 }
 
 fn help() {
