@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, env::args, path::Path, process::ExitCode};
+use std::{collections::VecDeque, env::args, io::Write, path::Path, process::ExitCode};
 
 fn main() -> ExitCode {
     let mut args = args().skip(1);
@@ -42,8 +42,10 @@ fn main() -> ExitCode {
 
             if path.is_dir() {
                 // do dir things
+                // if -recursive is set then do recursively
             } else if path.is_file() {
                 // do file things
+                // grrs::find_matches();
             }
         }
     } else {
