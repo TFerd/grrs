@@ -39,20 +39,37 @@ fn main() {
     if inputs.len() > 1 {
         // do stuff im stuff
         let search_query = inputs.pop_front().expect("unable to get search term");
+        let mut writer = std::io::stdout();
 
         while let Some(input) = inputs.pop_front().as_deref() {
             let path = Path::new(input);
 
             if path.is_dir() {
                 if recurse == true {
-                    let queue = VecDeque::<&Path>::new();
+                    let mut queue = VecDeque::<&Path>::new();
+                    queue.push_back(path);
+                    while !queue.is_empty() {
+                        let next_dir = queue.pop_front().unwrap();
+
+                        while let Some(next_dir_item) = next_dir.read_dir().unwrap().next() {
+                            let next_dir_item_path = next_dir_item.unwrap().path();
+
+                            if next_dir_item_path.is_dir() {
+                                // queue.push_back(&next_dir_item_path);
+                            }
+                            else {
+                                grrs::find_matches(&search_query, &read_to_string(next_dir_item_path).unwrap(), &writer ).unwrap();
+                            }
+                        }
+                    }
+                    path.read_dir().unwrap();
                 } else {
                     let mut contents = path.read_dir().unwrap();
                     while let Some(content) = contents.next() {
                         let file_content =
                             read_to_string(content.unwrap().path()).unwrap_or("".to_string());
 
-                        grrs::find_matches(&search_query, &file_content, &mut std::io::stdout()).unwrap();
+                        grrs::find_matches(&search_query, &file_content, &writer).unwrap();
                     }
                 }
                 // do dir things
