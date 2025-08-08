@@ -1,7 +1,7 @@
 use std::io::{Error, Write};
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
-fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
+pub fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
     for line in content.lines() {
         if line.contains(pattern) {
             writeln!(writer, "{}", line)?;

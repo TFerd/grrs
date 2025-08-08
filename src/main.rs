@@ -1,3 +1,4 @@
+use std::fs::read_to_string;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
 fn main() {
@@ -8,6 +9,7 @@ fn main() {
 
     let mut verbose = false; // TODO: implement these jawns
     let mut output: Option<String> = None;
+    let mut recurse = false;
 
     while let Some(arg) = args.next() {
         match &arg[..] {
@@ -16,7 +18,7 @@ fn main() {
                 return;
             }
             "-v | --verbose" => verbose = true,
-            "-r | --recursive" => println!("recursive not implemented"),
+            "-r | --recursive" => recurse = true,
             "-o | --output" => {
                 if let Some(output_path) = args.next() {
                     output = Some(output_path)
@@ -42,11 +44,22 @@ fn main() {
             let path = Path::new(input);
 
             if path.is_dir() {
+                if recurse == true {
+                    let queue = VecDeque::<&Path>::new();
+                } else {
+                    let mut contents = path.read_dir().unwrap();
+                    while let Some(content) = contents.next() {
+                        let file_content =
+                            read_to_string(content.unwrap().path()).unwrap_or("".to_string());
+
+                        grrs::find_matches(&search_query, &file_content, &mut std::io::stdout()).unwrap();
+                    }
+                }
                 // do dir things
                 // if -recursive is set then do recursively
             } else if path.is_file() {
                 // do file things
-                // grrs::find_matches();
+                grrs::find_matches(&search_query, &read_to_string(path).unwrap(), &mut std::io::stdout()).unwrap();
             }
         }
     } else {
@@ -54,7 +67,6 @@ fn main() {
         return;
     }
 
-    println!("inputs: {:?}", inputs);
     println!("grrs ran in {} ms", timer.elapsed().unwrap().as_millis());
 }
 
