@@ -38,7 +38,6 @@ fn main() {
     }
 
     if inputs.len() > 1 {
-        // do stuff im stuff
         let search_query = inputs.pop_front().expect("unable to get search term");
         let mut writer = std::io::stdout();
 
@@ -77,10 +76,7 @@ fn main() {
                         grrs::find_matches(&search_query, &file_content, &writer).unwrap();
                     }
                 }
-                // do dir things
-                // if -recursive is set then do recursively
             } else if path.is_file() {
-                // do file things
                 grrs::find_matches(
                     &search_query,
                     &read_to_string(path).unwrap(),
