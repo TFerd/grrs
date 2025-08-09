@@ -1,4 +1,5 @@
 use std::fs::read_to_string;
+use std::path::PathBuf;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
 fn main() {
@@ -17,9 +18,9 @@ fn main() {
                 help();
                 return;
             }
-            "-v | --verbose" => verbose = true,
-            "-r | --recursive" => recurse = true,
-            "-o | --output" => {
+            "-v" | "--verbose" => verbose = true,
+            "-r" | "--recursive" => recurse = true,
+            "-o" | "--output" => {
                 if let Some(output_path) = args.next() {
                     output = Some(output_path)
                 } else {
@@ -46,19 +47,23 @@ fn main() {
 
             if path.is_dir() {
                 if recurse == true {
-                    let mut queue = VecDeque::<&Path>::new();
-                    queue.push_back(path);
+                    let mut queue = VecDeque::<PathBuf>::new();
+                    queue.push_back(path.to_path_buf());
                     while !queue.is_empty() {
                         let next_dir = queue.pop_front().unwrap();
 
-                        while let Some(next_dir_item) = next_dir.read_dir().unwrap().next() {
+                        for next_dir_item in next_dir.read_dir().unwrap() {
                             let next_dir_item_path = next_dir_item.unwrap().path();
 
                             if next_dir_item_path.is_dir() {
-                                // queue.push_back(&next_dir_item_path);
-                            }
-                            else {
-                                grrs::find_matches(&search_query, &read_to_string(next_dir_item_path).unwrap(), &writer ).unwrap();
+                                queue.push_back(next_dir_item_path.to_path_buf());
+                            } else {
+                                grrs::find_matches(
+                                    &search_query,
+                                    &read_to_string(next_dir_item_path).unwrap(),
+                                    &writer,
+                                )
+                                .unwrap();
                             }
                         }
                     }
@@ -76,7 +81,12 @@ fn main() {
                 // if -recursive is set then do recursively
             } else if path.is_file() {
                 // do file things
-                grrs::find_matches(&search_query, &read_to_string(path).unwrap(), &mut std::io::stdout()).unwrap();
+                grrs::find_matches(
+                    &search_query,
+                    &read_to_string(path).unwrap(),
+                    &mut std::io::stdout(),
+                )
+                .unwrap();
             }
         }
     } else {
