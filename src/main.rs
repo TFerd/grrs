@@ -87,7 +87,6 @@ fn main() {
                                     }
                                 }
                                 None => {
-                                    println!("printint to console");
                                     grrs::find_matches(&search_query, content, &std::io::stdout())
                                         .unwrap();
                                 }
@@ -111,7 +110,6 @@ fn main() {
                             }
                         }
                         None => {
-                            println!("printint to console");
                             grrs::find_matches(&search_query, &content, &std::io::stdout())
                                 .unwrap();
                         }
@@ -134,7 +132,6 @@ fn main() {
                     }
                 }
                 None => {
-                    println!("printint to console");
                     grrs::find_matches(&search_query, content, &std::io::stdout()).unwrap();
                 }
             }
