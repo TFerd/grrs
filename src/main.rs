@@ -38,98 +38,92 @@ fn main() {
         }
     }
 
-    if inputs.len() > 1 {
-        let search_query = inputs.pop_front().expect("unable to get search term");
+    if inputs.len() < 2 {
+        println!("Not enough parameters given. The correct syntax is 'grrs <query> [<files>]'");
+        return;
+    }
 
-        let mut output_file: Option<File> = None;
+    let search_query = inputs.pop_front().expect("unable to get search term");
 
-        if let Some(output) = output {
-            output_file = Some(File::create(output).unwrap());
-        }
+    let mut output_file: Option<File> = None;
 
-        while let Some(input) = inputs.pop_front().as_deref() {
-            let path = Path::new(input);
+    if let Some(output) = output {
+        output_file = Some(File::create(output).unwrap());
+    }
 
-            log(format!("Checking path {:?}", path), verbose);
+    while let Some(input) = inputs.pop_front().as_deref() {
+        let path = Path::new(input);
 
-            if path.is_dir() {
-                log(format!("Path {:?} is a directory", path), verbose);
-                if recurse == true {
-                    let mut queue = VecDeque::<PathBuf>::new();
-                    queue.push_back(path.to_path_buf());
-                    while !queue.is_empty() {
-                        let next_dir = queue.pop_front().unwrap();
+        log(format!("Checking path {:?}", path), verbose);
 
-                        log(format!("Checking {:?}", next_dir.as_path()), verbose);
+        if path.is_dir() {
+            log(format!("Path {:?} is a directory", path), verbose);
+            if recurse == true {
+                let mut queue = VecDeque::<PathBuf>::new();
+                queue.push_back(path.to_path_buf());
+                while !queue.is_empty() {
+                    let next_dir = queue.pop_front().unwrap();
 
-                        for next_dir_item in next_dir.read_dir().unwrap() {
-                            let next_dir_item_path = next_dir_item.unwrap().path();
+                    log(format!("Checking {:?}", next_dir.as_path()), verbose);
 
-                            log(format!("Checking {:?}", next_dir_item_path), verbose);
+                    for next_dir_item in next_dir.read_dir().unwrap() {
+                        let next_dir_item_path = next_dir_item.unwrap().path();
 
-                            if next_dir_item_path.is_dir() {
-                                queue.push_back(next_dir_item_path.to_path_buf());
-                            } else {
-                                let content =
-                                    &read_to_string(next_dir_item_path).unwrap_or_default();
+                        log(format!("Checking {:?}", next_dir_item_path), verbose);
 
-                                match output_file {
-                                    Some(ref mut x) => {
-                                        log(format!("Writing to file {:?}", x), verbose);
-                                        let vec = grrs::return_matches(&search_query, content);
+                        if next_dir_item_path.is_dir() {
+                            queue.push_back(next_dir_item_path.to_path_buf());
+                        } else {
+                            let content = &read_to_string(next_dir_item_path).unwrap_or_default();
 
-                                        for line in vec {
-                                            x.write_all(line.as_bytes()).unwrap();
-                                        }
+                            match output_file {
+                                Some(ref mut x) => {
+                                    log(format!("Writing to file {:?}", x), verbose);
+                                    let vec = grrs::return_matches(&search_query, content);
+
+                                    for line in vec {
+                                        x.write_all(line.as_bytes()).unwrap();
                                     }
-                                    None => {
-                                        println!("printint to console");
-                                        grrs::find_matches(
-                                            &search_query,
-                                            content,
-                                            &std::io::stdout(),
-                                        )
+                                }
+                                None => {
+                                    println!("printint to console");
+                                    grrs::find_matches(&search_query, content, &std::io::stdout())
                                         .unwrap();
-                                    }
                                 }
                             }
                         }
                     }
-                } else {
-                    let mut contents = path.read_dir().unwrap();
-                    while let Some(content) = contents.next() {
-                        let file_content =
-                            read_to_string(content.unwrap().path()).unwrap_or("".to_string());
+                }
+            } else {
+                let mut contents = path.read_dir().unwrap();
+                while let Some(content) = contents.next() {
+                    let file_content =
+                        read_to_string(content.unwrap().path()).unwrap_or("".to_string());
 
-                        grrs::find_matches(&search_query, &file_content, &std::io::stdout())
-                            .unwrap();
+                    grrs::find_matches(&search_query, &file_content, &std::io::stdout()).unwrap();
+                }
+            }
+        } else if path.is_file() {
+            log(format!("Path {:?} is a file", path), verbose);
+
+            let content = &read_to_string(path).unwrap_or_default();
+
+            match output_file {
+                Some(ref mut x) => {
+                    log(format!("Writing to file {:?}", x), verbose);
+                    let vec = grrs::return_matches(&search_query, content);
+
+                    for line in vec {
+                        x.write_all(line.as_bytes()).unwrap();
+                        x.write_all(b"\n").unwrap();
                     }
                 }
-            } else if path.is_file() {
-                log(format!("Path {:?} is a file", path), verbose);
-
-                let content = &read_to_string(path).unwrap_or_default();
-
-                match output_file {
-                    Some(ref mut x) => {
-                        log(format!("Writing to file {:?}", x), verbose);
-                        let vec = grrs::return_matches(&search_query, content);
-
-                        for line in vec {
-                            x.write_all(line.as_bytes()).unwrap();
-                            x.write_all(b"\n").unwrap();
-                        }
-                    }
-                    None => {
-                        println!("printint to console");
-                        grrs::find_matches(&search_query, content, &std::io::stdout()).unwrap();
-                    }
+                None => {
+                    println!("printint to console");
+                    grrs::find_matches(&search_query, content, &std::io::stdout()).unwrap();
                 }
             }
         }
-    } else {
-        println!("Not enough parameters given. The correct syntax is 'grrs <query> [<files>]'");
-        return;
     }
 
     println!("grrs ran in {} ms", timer.elapsed().unwrap().as_millis());
