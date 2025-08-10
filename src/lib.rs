@@ -12,7 +12,7 @@ pub fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Res
 }
 
 /// Returns lines containing matches of `pattern` within `content`
-fn return_matches<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
+pub fn return_matches<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
     let mut vec = Vec::new();
 
     for line in content.lines() {
