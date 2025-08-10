@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
+// ugly ahh code omgi really suck
 fn main() {
     let timer = SystemTime::now();
     let mut args = args().skip(1);
@@ -23,7 +24,7 @@ fn main() {
             "-r" | "--recursive" => recurse = true,
             "-o" | "--output" => {
                 if let Some(output_path) = args.next() {
-                    output = Some(output_path)
+                    output = Some(output_path);
                 } else {
                     panic!("No value specified for --output");
                 }
@@ -97,10 +98,24 @@ fn main() {
             } else {
                 let mut contents = path.read_dir().unwrap();
                 while let Some(content) = contents.next() {
-                    let file_content =
-                        read_to_string(content.unwrap().path()).unwrap_or("".to_string());
+                    let content = read_to_string(content.unwrap().path()).unwrap_or("".to_string());
 
-                    grrs::find_matches(&search_query, &file_content, &std::io::stdout()).unwrap();
+                    match output_file {
+                        Some(ref mut x) => {
+                            log(format!("Writing to file {:?}", x), verbose);
+                            let vec = grrs::return_matches(&search_query, &content);
+
+                            for line in vec {
+                                x.write_all(line.as_bytes()).unwrap();
+                                x.write_all(b"\n").unwrap();
+                            }
+                        }
+                        None => {
+                            println!("printint to console");
+                            grrs::find_matches(&search_query, &content, &std::io::stdout())
+                                .unwrap();
+                        }
+                    }
                 }
             }
         } else if path.is_file() {
