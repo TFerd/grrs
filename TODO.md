@@ -1,0 +1,6 @@
+[x] fix verbosity (get rid of if else hell)
+[] add color highlighting to matches in files
+[] maybe add file name where the phrase was found
+~~[] do this in C~~
+~~[] move reusable code into function (probably the stuff with output flag)~~
+[] handle all unwraps
