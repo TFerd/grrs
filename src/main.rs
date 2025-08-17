@@ -84,6 +84,7 @@ fn main() {
 
                                 for line in vec {
                                     x.write_all(line.as_bytes()).unwrap();
+                                    x.write(b"\n").unwrap();
                                 }
                             }
                             None => {

@@ -48,6 +48,31 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug Recursive output",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=grrs",
+          "--package=grrs"
+        ],
+        "filter": {
+          "name": "grrs",
+          "kind": "bin"
+        }
+      },
+      "args": [
+        "--",
+        "-r",
+        "-o",
+        "output.txt",
+        "hello",
+        "test_target"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug unit tests in executable 'grrs'",
       "cargo": {
         "args": [
