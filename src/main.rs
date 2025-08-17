@@ -3,7 +3,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-// ugly ahh code omgi really suck
 fn main() {
     let timer = SystemTime::now();
     let mut args = args().skip(1);
