@@ -88,7 +88,7 @@ fn main() {
                                 }
                             }
                             None => {
-                                grrs::find_matches(&search_query, content, &std::io::stdout())
+                                grrs::print_matches(&search_query, content, &std::io::stdout())
                                     .unwrap();
                             }
                         }
@@ -111,7 +111,7 @@ fn main() {
                     }
                 }
                 None => {
-                    grrs::find_matches(&search_query, content, &std::io::stdout()).unwrap();
+                    grrs::print_matches(&search_query, content, &std::io::stdout()).unwrap();
                 }
             }
         }
