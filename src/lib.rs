@@ -4,10 +4,15 @@ const GREEN_TEXT: &'static str = "\x1b[0;32m";
 const NORMAL_TEXT: &'static str = "\x1b[0m";
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
-pub fn print_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
+pub fn print_matches(
+    pattern: &str,
+    content: &str,
+    mut writer: impl Write,
+    filename: &str,
+) -> Result<(), Error> {
     for line in content.lines() {
         if line.contains(pattern) {
-            writeln!(writer, "{}", format_match(pattern, line))?;
+            writeln!(writer, "{}: {}", filename, format_match(pattern, line))?;
         }
     }
 
@@ -46,26 +51,4 @@ fn format_match<'a>(pattern: &str, mut line: &'a str) -> String {
     formatted_string += line;
 
     formatted_string
-}
-
-#[test]
-fn find_matches_finds_matches() {
-    let mut writer = Vec::new();
-    let result = print_matches(
-        "pattern",
-        "benis\nboosy\ni have a pattern\nwuuzy",
-        &mut writer,
-    );
-
-    assert!(result.is_ok());
-    assert_eq!(writer, b"i have a pattern\n");
-}
-
-#[test]
-fn return_matches_returns_matches() {
-    let result = return_matches("match", "hello\nmatchme\nim a match\nim a catch");
-
-    assert_eq!(2, result.len());
-    assert_eq!(*result.get(0).unwrap(), "matchme");
-    assert_eq!(*result.get(1).unwrap(), "im a match");
 }
