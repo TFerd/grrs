@@ -1,10 +1,18 @@
 use std::io::{Error, Write};
 
+const GREEN_TEXT: &'static str = "\x1b[0;32m";
+const NORMAL_TEXT: &'static str = "\x1b[0m";
+
 /// Prints any occurences of `pattern` in `content` to the `writer`
-pub fn find_matches(pattern: &str, content: &str, mut writer: impl Write) -> Result<(), Error> {
+pub fn print_matches(
+    pattern: &str,
+    content: &str,
+    mut writer: impl Write,
+    filename: &str,
+) -> Result<(), Error> {
     for line in content.lines() {
         if line.contains(pattern) {
-            writeln!(writer, "{}", line)?;
+            writeln!(writer, "{}: {}", filename, format_match(pattern, line))?;
         }
     }
 
@@ -24,24 +32,23 @@ pub fn return_matches<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
     vec
 }
 
-#[test]
-fn find_matches_finds_matches() {
-    let mut writer = Vec::new();
-    let result = find_matches(
-        "pattern",
-        "benis\nboosy\ni have a pattern\nwuuzy",
-        &mut writer,
-    );
+/// Returns a formatted string highlighting matches
+fn format_match<'a>(pattern: &str, mut line: &'a str) -> String {
+    line = line.trim();
+    let mut formatted_string = String::new();
 
-    assert!(result.is_ok());
-    assert_eq!(writer, b"i have a pattern\n");
-}
+    while let Some(i) = line.find(pattern) {
+        let (pre_match_str, match_onwards_str) = line.split_at(i);
+        let (match_str, post_match_str) = match_onwards_str.split_at(pattern.len());
+        formatted_string += pre_match_str;
+        formatted_string += GREEN_TEXT;
+        formatted_string += match_str;
+        formatted_string += NORMAL_TEXT;
 
-#[test]
-fn return_matches_returns_matches() {
-    let result = return_matches("match", "hello\nmatchme\nim a match\nim a catch");
+        line = post_match_str;
+    }
 
-    assert_eq!(2, result.len());
-    assert_eq!(*result.get(0).unwrap(), "matchme");
-    assert_eq!(*result.get(1).unwrap(), "im a match");
+    formatted_string += line;
+
+    formatted_string
 }

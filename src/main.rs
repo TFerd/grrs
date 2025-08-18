@@ -3,7 +3,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-// ugly ahh code omgi really suck
 fn main() {
     let timer = SystemTime::now();
     let mut args = args().skip(1);
@@ -76,6 +75,8 @@ fn main() {
                             queue.push_back(next_dir_item_path.to_path_buf());
                         }
                     } else {
+                        let path_buf = next_dir_item_path.clone();
+                        let path = &path_buf.to_str().unwrap();
                         let content = &read_to_string(next_dir_item_path).unwrap_or_default();
 
                         match output_file {
@@ -84,12 +85,20 @@ fn main() {
                                 let vec = grrs::return_matches(&search_query, content);
 
                                 for line in vec {
-                                    x.write_all(line.as_bytes()).unwrap();
+                                    x.write(path.as_bytes()).unwrap();
+                                    x.write(": ".as_bytes()).unwrap();
+                                    x.write_all(line.trim().as_bytes()).unwrap();
+                                    x.write(b"\n").unwrap();
                                 }
                             }
                             None => {
-                                grrs::find_matches(&search_query, content, &std::io::stdout())
-                                    .unwrap();
+                                grrs::print_matches(
+                                    &search_query,
+                                    content,
+                                    &std::io::stdout(),
+                                    path,
+                                )
+                                .unwrap();
                             }
                         }
                     }
@@ -111,7 +120,13 @@ fn main() {
                     }
                 }
                 None => {
-                    grrs::find_matches(&search_query, content, &std::io::stdout()).unwrap();
+                    grrs::print_matches(
+                        &search_query,
+                        content,
+                        &std::io::stdout(),
+                        path.to_str().unwrap(),
+                    )
+                    .unwrap();
                 }
             }
         }
@@ -129,5 +144,5 @@ fn log(message: String, verbose: bool) {
         return;
     }
 
-    write!(&std::io::stdout(), "{}", message).unwrap();
+    writeln!(&std::io::stdout(), "{}", message).unwrap();
 }
