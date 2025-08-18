@@ -8,7 +8,7 @@ Example usage: `grrs <input> [<location>]`
 TODO:
 - [x] fix verbosity (get rid of if else hell)
 - [x] add color highlighting to matches in files
-- [] add file name where the phrase was found
+- [x] add file name where the phrase was found
 - ~~[] do this in C~~
 - ~~[] move reusable code into function (probably the stuff with output flag)~~
 - [] handle all unwraps :joy:
