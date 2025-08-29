@@ -3,10 +3,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-use grrs::{help, log, print_matches, return_matches};
-
-struct ThreadMaster {}
-
 fn main() {
     let timer = SystemTime::now();
     let mut args = args().skip(1);
@@ -60,13 +56,10 @@ fn main() {
 
         log(format!("Checking path {:?}", path), verbose);
 
-        // probably dont need this if else // i think i do lil bro
         if path.is_dir() {
             log(format!("Path {:?} is a directory", path), verbose);
             let mut queue = VecDeque::<PathBuf>::new();
-            if path.is_dir() {
-                queue.push_back(path.to_path_buf());
-            }
+            queue.push_back(path.to_path_buf());
             while !queue.is_empty() {
                 let next_dir = queue.pop_front().unwrap();
 
@@ -89,7 +82,7 @@ fn main() {
                         match output_file {
                             Some(ref mut x) => {
                                 log(format!("Writing to file {:?}", x), verbose);
-                                let vec = return_matches(&search_query, content);
+                                let vec = grrs::return_matches(&search_query, content);
 
                                 for line in vec {
                                     x.write(path.as_bytes()).unwrap();
@@ -99,8 +92,13 @@ fn main() {
                                 }
                             }
                             None => {
-                                print_matches(&search_query, content, &std::io::stdout(), path)
-                                    .unwrap();
+                                grrs::print_matches(
+                                    &search_query,
+                                    content,
+                                    &std::io::stdout(),
+                                    path,
+                                )
+                                .unwrap();
                             }
                         }
                     }
@@ -114,7 +112,7 @@ fn main() {
             match output_file {
                 Some(ref mut x) => {
                     log(format!("Writing to file {:?}", x), verbose);
-                    let vec = return_matches(&search_query, content);
+                    let vec = grrs::return_matches(&search_query, content);
 
                     for line in vec {
                         x.write_all(line.as_bytes()).unwrap();
@@ -122,7 +120,7 @@ fn main() {
                     }
                 }
                 None => {
-                    print_matches(
+                    grrs::print_matches(
                         &search_query,
                         content,
                         &std::io::stdout(),
@@ -135,4 +133,16 @@ fn main() {
     }
 
     println!("grrs ran in {} ms", timer.elapsed().unwrap().as_millis());
+}
+
+fn help() {
+    println!("help...");
+}
+
+fn log(message: String, verbose: bool) {
+    if verbose == false {
+        return;
+    }
+
+    writeln!(&std::io::stdout(), "{}", message).unwrap();
 }
