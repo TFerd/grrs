@@ -15,6 +15,7 @@ use grrs::{big_help, log, print_matches, return_matches};
 // all threads are awaited
 // awaiting waits for FUTURE threads (dont exit early until we're done traversing)
 // i think this will be fine because we will be in the 'while' loop until we hit all dirs
+// try using `thread::scope`
 
 fn main() {
     let timer = SystemTime::now();

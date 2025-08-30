@@ -1,7 +1,7 @@
 use std::{
     fs::{File, read_to_string},
     io::{Error, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     rc::Rc,
     sync::Arc,
     thread::{self, JoinHandle},
@@ -11,6 +11,8 @@ const GREEN_TEXT: &'static str = "\x1b[0;32m";
 const NORMAL_TEXT: &'static str = "\x1b[0m";
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
+///
+/// TODO: make filename optional
 pub fn print_matches(
     pattern: &str,
     content: &str,
@@ -49,26 +51,26 @@ pub fn log(message: String, verbose: bool) {
 
 // will be recursive // or no
 pub fn handle_dir(path: PathBuf, thread_master: Arc<Vec<JoinHandle<()>>>) {
-    // for item in path.read_dir().expect("Unable to read directory!") {
-    //     let item_path = item.unwrap().path();
+    for item in path.read_dir().expect("Unable to read directory!") {
+        let item_path = item.unwrap().path();
 
-    //     if item_path.is_dir() {
-    //         // thread rip
-    //         thread::spawn(move || {
-    //             handle_dir(item_path, Arc::clone(&thread_master));
-    //         });
-    //     } else {
-    //     }
-    // }
+        if item_path.is_dir() {
+            // thread rip
+            thread::spawn(move || {
+                handle_dir(item_path, Arc::clone(&thread_master));
+            });
+        } else {
+        }
+    }
 }
 
 /// Takes a `file` path input and either writes to a provided `output` file or prints the results to the terminal
 /// if no such file is provided.
 ///
 /// TODO: Allow developer to add their own writer here, aka add an `impl Write` param
-pub fn handle_file(file: &PathBuf, pattern: &str, output: Option<File>) {
-    let path = file.as_path();
-    let content = &read_to_string(file).unwrap_or_default();
+pub fn handle_file<U: AsRef<Path>>(file: U, pattern: &str, output: Option<File>) {
+    let path = file.as_ref();
+    let content = &read_to_string(path).unwrap_or_default();
     if let Some(mut output) = output {
         let vec = return_matches(pattern, content);
 

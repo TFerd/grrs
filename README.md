@@ -15,3 +15,4 @@ TODO:
 - [x] fix --output flag recursion bug (i just needed a newline lmfao)
 - [] add installation process to Cargo.toml(?)
 - [] add threading
+- [] change `for i in dir_entries` to an `into_iter().for_each()` loop, i think it's better for memory? (un)educated guess
