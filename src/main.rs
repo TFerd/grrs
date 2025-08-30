@@ -1,11 +1,20 @@
 use std::fs::{File, read_to_string};
 use std::io::Write;
 use std::path::PathBuf;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::thread::{self, JoinHandle};
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-use grrs::{help, log, print_matches, return_matches};
+use grrs::{big_help, log, print_matches, return_matches};
 
-struct ThreadMaster {}
+// a cursor traverses the file system and sends threads to work?
+// a cursor spawns more cursors in dirs? doesnt make sense
+
+// need to make sure:
+// all threads are awaited
+// awaiting waits for FUTURE threads (dont exit early until we're done traversing)
+// i think this will be fine because we will be in the 'while' loop until we hit all dirs
 
 fn main() {
     let timer = SystemTime::now();
@@ -20,7 +29,7 @@ fn main() {
     while let Some(arg) = args.next() {
         match &arg[..] {
             "-h" | "--help" => {
-                help();
+                big_help();
                 return;
             }
             "-v" | "--verbose" => verbose = true,
@@ -60,13 +69,16 @@ fn main() {
 
         log(format!("Checking path {:?}", path), verbose);
 
-        // probably dont need this if else // i think i do lil bro
         if path.is_dir() {
+            // threadripper
+            let mut threads = Arc::new(Vec::<JoinHandle<()>>::new());
+            // spawn (||) recursive_function();
+
             log(format!("Path {:?} is a directory", path), verbose);
             let mut queue = VecDeque::<PathBuf>::new();
-            if path.is_dir() {
-                queue.push_back(path.to_path_buf());
-            }
+
+            queue.push_back(path.to_path_buf());
+
             while !queue.is_empty() {
                 let next_dir = queue.pop_front().unwrap();
 
