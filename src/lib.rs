@@ -3,11 +3,14 @@ use std::{
     io::{Error, Write},
     path::Path,
     sync::Arc,
-    thread::Scope,
 };
+
+use rayon::Scope;
 
 const GREEN_TEXT: &'static str = "\x1b[0;32m";
 const NORMAL_TEXT: &'static str = "\x1b[0m";
+
+const UNABLE_TO_READ_DIR: &'static str = "Unable to read directory!";
 
 /// Prints any occurences of `pattern` in `content` to the `writer`
 ///
@@ -48,22 +51,45 @@ pub fn log(message: String, verbose: bool) {
     writeln!(&std::io::stdout(), "{}", message).unwrap();
 }
 
+pub fn handle_dir<D: AsRef<Path>>(dir: D, pattern: &str, mut output: Option<File>) {
+    for item in dir.as_ref().read_dir().expect(UNABLE_TO_READ_DIR) {
+        let item = item.unwrap().path();
+        let filename = item.to_str().unwrap();
+
+        if !item.is_dir() {
+            let content = &read_to_string(item.clone()).unwrap();
+
+            if let Some(ref mut output) = output {
+                let matches = return_matches(pattern, content);
+
+                for line in matches {
+                    output
+                        .write(format!("{:?}:{}\n", &filename, line).as_bytes())
+                        .unwrap();
+                }
+            } else {
+                print_matches(pattern, content, std::io::stdout(), &filename).unwrap();
+            }
+        }
+    }
+}
+
 // will be recursive // or no // or yes
-pub fn handle_dir<'a, D: AsRef<Path>>(
+pub fn handle_dir_recursive<'a, D: AsRef<Path>>(
     dir: D,
     pattern: &'a str,
     output: &'a Option<Arc<File>>,
-    scope: &'a Scope<'a, 'a>,
+    scope: &Scope<'a>,
 ) {
-    for item in dir.as_ref().read_dir().expect("Unable to read directory!") {
+    for item in dir.as_ref().read_dir().expect(UNABLE_TO_READ_DIR) {
         let item_path = item.unwrap().path();
 
         if item_path.is_dir() {
-            scope.spawn(move || {
-                handle_dir(&item_path, pattern, output, scope);
+            scope.spawn(move |s| {
+                handle_dir_recursive(&item_path, pattern, &output, s);
             });
         } else {
-            let content = &read_to_string(item_path.clone()).unwrap();
+            let content = &read_to_string(item_path.clone()).unwrap_or_default();
             if let Some(mut output) = output.clone() {
                 let vec = return_matches(&pattern, content);
 
@@ -140,3 +166,6 @@ fn format_match<'a>(pattern: &str, mut line: &'a str) -> String {
 
 #[test]
 fn handle_dir_should_throw() {}
+
+#[test]
+fn format_match_should_format() {}
