@@ -1,19 +1,7 @@
-use std::fs::{File, read_to_string};
-use std::io::Write;
+use std::fs::File;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-use grrs::{
-    big_help, handle_dir, handle_dir_recursive, handle_file, log, print_matches, return_matches,
-};
-
-// a cursor traverses the file system and sends threads to work?
-// a cursor spawns more cursors in dirs? doesnt make sense
-
-// need to make sure:
-// all threads are awaited
-// awaiting waits for FUTURE threads (dont exit early until we're done traversing)
-// i think this will be fine because we will be in the 'while' loop until we hit all dirs
-// try using `thread::scope`
+use grrs::{big_help, handle_dir, handle_dir_recursive, handle_file, log};
 
 fn main() {
     let timer = SystemTime::now();
@@ -22,7 +10,6 @@ fn main() {
     let mut inputs = VecDeque::<String>::new();
 
     let mut verbose = false;
-    // let mut output: Option<String> = None;
     let mut output_file: Option<File> = None;
     let mut recurse = false;
 
@@ -68,7 +55,7 @@ fn main() {
             if recurse {
                 rayon::scope(|s| handle_dir_recursive(&path, &pattern, &None, s));
             } else {
-                handle_dir(&path, &pattern, &output_file);
+                handle_dir(&path, &pattern, None);
             }
         } else if path.is_file() {
             log(format!("Path {:?} is a file", path), verbose);
