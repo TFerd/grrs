@@ -1,10 +1,9 @@
 use std::{
     fs::{File, read_to_string},
     io::{Error, Write},
-    path::{Path, PathBuf},
-    rc::Rc,
+    path::Path,
     sync::Arc,
-    thread::{self, JoinHandle},
+    thread::Scope,
 };
 
 const GREEN_TEXT: &'static str = "\x1b[0;32m";
@@ -49,17 +48,38 @@ pub fn log(message: String, verbose: bool) {
     writeln!(&std::io::stdout(), "{}", message).unwrap();
 }
 
-// will be recursive // or no
-pub fn handle_dir(path: PathBuf, thread_master: Arc<Vec<JoinHandle<()>>>) {
-    for item in path.read_dir().expect("Unable to read directory!") {
+// will be recursive // or no // or yes
+/// FIXME: Make output a Arc<mutex<option<file if the writing is a bit wonky
+pub fn handle_dir<'a, D: AsRef<Path>>(
+    dir: D,
+    pattern: &str,
+    output: Option<Arc<File>>,
+    scope: &'a Scope<'a, 'a>,
+) {
+    for item in dir.as_ref().read_dir().expect("Unable to read directory!") {
         let item_path = item.unwrap().path();
 
         if item_path.is_dir() {
-            // thread rip
-            thread::spawn(move || {
-                handle_dir(item_path, Arc::clone(&thread_master));
-            });
+            scope.spawn(|| {});
         } else {
+            let content = &read_to_string(item_path.clone()).unwrap();
+            if let Some(mut output) = output.clone() {
+                let vec = return_matches(pattern, content);
+
+                for line in vec {
+                    output
+                        .write(format!("{:?}:{}\n", &item_path, line).as_bytes())
+                        .unwrap();
+                }
+            } else {
+                print_matches(
+                    pattern,
+                    content,
+                    &std::io::stdout(),
+                    &item_path.to_str().unwrap(),
+                )
+                .unwrap();
+            }
         }
     }
 }
@@ -68,7 +88,8 @@ pub fn handle_dir(path: PathBuf, thread_master: Arc<Vec<JoinHandle<()>>>) {
 /// if no such file is provided.
 ///
 /// TODO: Allow developer to add their own writer here, aka add an `impl Write` param
-pub fn handle_file<U: AsRef<Path>>(file: U, pattern: &str, output: Option<File>) {
+/// i dont even need this
+pub fn handle_file<F: AsRef<Path>>(file: F, pattern: &str, output: Option<File>) {
     let path = file.as_ref();
     let content = &read_to_string(path).unwrap_or_default();
     if let Some(mut output) = output {
