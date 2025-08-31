@@ -32,22 +32,6 @@ pub fn return_matches<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
     vec
 }
 
-pub fn handle_dir() {} // send a mesage on create? read the messages of threads on the main thread to add a thread to  masteR?
-
-pub fn handle_file() {}
-
-pub fn log(message: String, verbose: bool) {
-    if verbose == false {
-        return;
-    }
-
-    writeln!(&std::io::stdout(), "{}", message).unwrap();
-}
-
-pub fn help() {
-    println!("help...");
-}
-
 /// Returns a formatted string highlighting matches
 fn format_match<'a>(pattern: &str, mut line: &'a str) -> String {
     line = line.trim();

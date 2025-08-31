@@ -14,4 +14,3 @@ TODO:
 - [] handle all unwraps :joy:
 - [x] fix --output flag recursion bug (i just needed a newline lmfao)
 - [] add installation process to Cargo.toml(?)
-- [] add threading
