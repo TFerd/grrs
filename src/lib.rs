@@ -49,22 +49,32 @@ pub fn log(message: String, verbose: bool) {
 }
 
 // will be recursive // or no // or yes
-/// FIXME: Make output a Arc<mutex<option<file if the writing is a bit wonky
 pub fn handle_dir<'a, D: AsRef<Path>>(
     dir: D,
-    pattern: &str,
-    output: Option<Arc<File>>,
+    pattern: &'a str,
+    output: &'a Option<Arc<File>>,
     scope: &'a Scope<'a, 'a>,
 ) {
-    for item in dir.as_ref().read_dir().expect("Unable to read directory!") {
+    // let dir = Arc::clone(&dir);
+    // let pattern = Arc::clone(&pattern);
+
+    for item in dir
+        .as_ref()
+        // .as_ref()
+        .read_dir()
+        .expect("Unable to read directory!")
+    {
         let item_path = item.unwrap().path();
 
         if item_path.is_dir() {
-            scope.spawn(|| {});
+            scope.spawn(move || {
+                // let dir = dir.clone();
+                handle_dir(&item_path, pattern, output, scope);
+            });
         } else {
             let content = &read_to_string(item_path.clone()).unwrap();
             if let Some(mut output) = output.clone() {
-                let vec = return_matches(pattern, content);
+                let vec = return_matches(&pattern, content);
 
                 for line in vec {
                     output
@@ -73,7 +83,7 @@ pub fn handle_dir<'a, D: AsRef<Path>>(
                 }
             } else {
                 print_matches(
-                    pattern,
+                    &pattern,
                     content,
                     &std::io::stdout(),
                     &item_path.to_str().unwrap(),
@@ -96,7 +106,9 @@ pub fn handle_file<F: AsRef<Path>>(file: F, pattern: &str, output: Option<File>)
         let vec = return_matches(pattern, content);
 
         for line in vec {
-            output.write(format!("{:?}:{}\n", path, line).as_bytes());
+            output
+                .write(format!("{:?}:{}\n", path, line).as_bytes())
+                .unwrap();
         }
     } else {
         print_matches(
@@ -104,7 +116,8 @@ pub fn handle_file<F: AsRef<Path>>(file: F, pattern: &str, output: Option<File>)
             content,
             &std::io::stdout(),
             &path.to_str().unwrap(),
-        );
+        )
+        .unwrap();
     }
 }
 
