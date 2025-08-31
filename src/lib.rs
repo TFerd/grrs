@@ -55,20 +55,11 @@ pub fn handle_dir<'a, D: AsRef<Path>>(
     output: &'a Option<Arc<File>>,
     scope: &'a Scope<'a, 'a>,
 ) {
-    // let dir = Arc::clone(&dir);
-    // let pattern = Arc::clone(&pattern);
-
-    for item in dir
-        .as_ref()
-        // .as_ref()
-        .read_dir()
-        .expect("Unable to read directory!")
-    {
+    for item in dir.as_ref().read_dir().expect("Unable to read directory!") {
         let item_path = item.unwrap().path();
 
         if item_path.is_dir() {
             scope.spawn(move || {
-                // let dir = dir.clone();
                 handle_dir(&item_path, pattern, output, scope);
             });
         } else {
