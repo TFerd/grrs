@@ -55,12 +55,30 @@ fn main() {
             if recurse {
                 rayon::scope(|s| handle_dir_recursive(&path, &pattern, &None, s));
             } else {
-                handle_dir(&path, &pattern, None);
+                handle_dir(
+                    &path,
+                    &pattern,
+                    if output_file.is_some() {
+                        output_file.as_ref()
+                    } else {
+                        None
+                    },
+                )
+                .unwrap();
             }
         } else if path.is_file() {
             log(format!("Path {:?} is a file", path), verbose);
 
-            handle_file(path, &pattern, None);
+            handle_file(
+                path,
+                &pattern,
+                if output_file.is_some() {
+                    output_file.as_ref()
+                } else {
+                    None
+                },
+            )
+            .unwrap();
         }
     }
 
