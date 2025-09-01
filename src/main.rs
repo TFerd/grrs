@@ -105,3 +105,15 @@ fn main() {
 
     println!("grrs ran in {} ms", timer.elapsed().unwrap().as_millis());
 }
+
+fn help() {
+    println!("help...");
+}
+
+fn log(message: String, verbose: bool) {
+    if verbose == false {
+        return;
+    }
+
+    writeln!(&std::io::stdout(), "{}", message).unwrap();
+}
