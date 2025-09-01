@@ -2,7 +2,7 @@ use std::{
     fs::{File, read_to_string},
     io::{Error, Write},
     path::Path,
-    sync::Arc,
+    sync::mpsc::Sender,
 };
 
 use rayon::Scope;
@@ -30,39 +30,43 @@ pub fn handle_dir<D: AsRef<Path>>(
 
 // FIXME: unoptimal, could be faster. Try and remove clone()'s
 // TODO: return a result? for why
-pub fn handle_dir_recursive<'a, D: AsRef<Path>>(
-    dir: D,
-    pattern: &'a str,
-    output: &'a Option<Arc<File>>,
-    scope: &Scope<'a>,
-) {
+pub fn handle_dir_recursive<'a, D: AsRef<Path>>(dir: D, pattern: &'a str, scope: &Scope<'a>) {
     for item in dir.as_ref().read_dir().expect(UNABLE_TO_READ_DIR) {
         let item_path = item.unwrap().path();
 
         if item_path.is_dir() {
             scope.spawn(move |s| {
-                handle_dir_recursive(&item_path, pattern, &output, s);
+                handle_dir_recursive(&item_path, pattern, s);
             });
         } else {
             let content = &read_to_string(item_path.clone()).unwrap_or_default();
             let filename = &item_path.to_str().unwrap();
 
-            if let Some(mut output) = output.clone() {
-                let vec = return_matches(&pattern, content);
+            print_matches(&pattern, content, &std::io::stdout(), filename).unwrap();
+        }
+    }
+}
 
-                for line in vec {
-                    output
-                        .write(format!("{}: {}\n", filename, line).as_bytes())
-                        .unwrap();
-                }
-            } else {
-                print_matches(
-                    &pattern,
-                    content,
-                    &std::io::stdout(),
-                    &item_path.to_str().unwrap(),
-                )
-                .unwrap();
+pub fn handle_dir_recursive_with_output<'a, D: AsRef<Path>>(
+    dir: D,
+    pattern: &'a str,
+    scope: &Scope<'a>,
+    tx: Sender<String>,
+) {
+    for item in dir.as_ref().read_dir().expect(UNABLE_TO_READ_DIR) {
+        let item_path = item.unwrap().path();
+
+        if item_path.is_dir() {
+            let tx_clone = tx.clone();
+            scope.spawn(move |s| {
+                handle_dir_recursive_with_output(&item_path, pattern, s, tx_clone);
+            });
+        } else {
+            let content = &read_to_string(item_path.clone()).unwrap_or_default();
+            let filename = &item_path.to_str().unwrap();
+
+            for line in return_matches(pattern, content) {
+                tx.send(format!("{}: {}", filename, line)).unwrap();
             }
         }
     }
@@ -72,8 +76,6 @@ pub fn handle_dir_recursive<'a, D: AsRef<Path>>(
 /// if no such file is provided.
 ///
 /// TODO: Allow developer to add their own writer here, aka add an `impl Write` param
-/// i dont even need this
-/// i do now lil bro (with addition of handle_dir non recursive)
 pub fn handle_file<F: AsRef<Path>>(
     file: F,
     pattern: &str,

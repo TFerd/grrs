@@ -1,7 +1,11 @@
 use std::fs::File;
+use std::io::Write;
+use std::sync::mpsc;
 use std::{collections::VecDeque, env::args, path::Path, time::SystemTime};
 
-use grrs::{big_help, handle_dir, handle_dir_recursive, handle_file, log};
+use grrs::{
+    big_help, handle_dir, handle_dir_recursive, handle_dir_recursive_with_output, handle_file, log,
+};
 
 fn main() {
     let timer = SystemTime::now();
@@ -53,7 +57,24 @@ fn main() {
         if path.is_dir() {
             log(format!("Path {:?} is a directory", path), verbose);
             if recurse {
-                rayon::scope(|s| handle_dir_recursive(&path, &pattern, &None, s));
+                let (tx, rx) = mpsc::channel::<String>();
+
+                rayon::scope(|s| {
+                    if output_file.is_some() {
+                        handle_dir_recursive_with_output(&path, &pattern, s, tx);
+                    } else {
+                        handle_dir_recursive(&path, &pattern, s);
+                    }
+                });
+
+                while let Ok(res) = rx.recv() {
+                    log(format!("Match found, writing to file: {}", res), verbose);
+                    output_file
+                        .as_mut()
+                        .unwrap()
+                        .write(format!("{}\n", res).as_bytes())
+                        .unwrap();
+                }
             } else {
                 handle_dir(
                     &path,
