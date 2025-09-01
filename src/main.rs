@@ -58,8 +58,8 @@ fn main() {
                 handle_dir(
                     &path,
                     &pattern,
-                    if output_file.is_some() {
-                        output_file.as_ref()
+                    if let Some(ref o) = output_file {
+                        Some(o)
                     } else {
                         None
                     },
@@ -72,8 +72,8 @@ fn main() {
             handle_file(
                 path,
                 &pattern,
-                if output_file.is_some() {
-                    output_file.as_ref()
+                if let Some(ref o) = output_file {
+                    Some(o)
                 } else {
                     None
                 },
