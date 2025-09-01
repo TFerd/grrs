@@ -1,4 +1,4 @@
-A command-line tool to find a given input in a given file or directory.
+A 🔥blazing fast 💻command-line tool to 🔍find a given input in a 🗒️file or 📁directory.
 
 Example usage: `grrs <input> [<location>]`
 
@@ -19,3 +19,4 @@ TODO:
 - [ ] check the output file clone is not too heavy and make sure its working
 - [ ] pass around an options or configuration struct to handle things like verbosity and output flags etc
 - [ ] implement the `-help` and `--help` flags
+- [ ] add regex? 
