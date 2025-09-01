@@ -12,10 +12,10 @@ TODO:
 - ~~[ ] do this in C~~
 - ~~[ ] move reusable code into function (probably the stuff with output flag)~~
 - [x] fix --output flag recursion bug (i just needed a newline lmfao)
-- [ ] add installation process to Cargo.toml(?)
-- [ ] add threading
+- ~~[ ] add installation process to Cargo.toml(?)~~
+- [x] add threading
 - [ ] change `for i in dir_entries` to an `into_iter().for_each()` loop, i think it's better for memory? (un)educated guess
-- [ ] try rayon crate for threads?
+- [x] try rayon crate for threads?
 - [ ] check the output file clone is not too heavy and make sure its working
 - [ ] pass around an options or configuration struct to handle things like verbosity and output flags etc
 - [ ] implement the `-help` and `--help` flags
