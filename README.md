@@ -17,7 +17,6 @@ TODO:
 - [x] add threading
 - [x] try rayon crate for threads?
 - [ ] change `for i in dir_entries` to an `into_iter().for_each()` loop, i think it's better for memory? (un)educated guess
-- [ ] check the output file clone is not too heavy and make sure its working
 - [ ] pass around an options or configuration struct to handle things like verbosity and output flags etc
 - [ ] implement the `-help` and `--help` flags
 - [ ] add regex? 
