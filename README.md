@@ -1,4 +1,4 @@
-A blazing🔥 fast command-line💻 tool to find🔍 a given input in a file🗒️ or directory📁.
+A blazing🔥 fast command-line💻 tool to find🔍 text in a file🗒️ or directory📁.
 
 Example usage: `grrs <input> [<location>]`
 
