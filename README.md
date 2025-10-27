@@ -19,3 +19,4 @@ TODO:
 - [ ] implement the `-help` and `--help` flags
 - [ ] add regex?
 - [ ] add fuzzy search?
+- [ ] unit tests
